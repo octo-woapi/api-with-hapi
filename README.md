@@ -1,4 +1,4 @@
-# API with Express
+# API with Hapi
 
 > Example of a Node.js API written with the framework Hapi.
 
