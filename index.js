@@ -1,27 +1,23 @@
-const express = require("express");
+const Hapi = require("hapi");
 
 const env = process.env.NODE_ENV || "development";
+const port = process.env.PORT || 3000;
 
 module.exports = async () => {
-  const app = express();
+  const server = new Hapi.Server({ port, host: "localhost" });
 
   const conf = require("./conf")(env);
   const logger = require("./src/logger")(conf);
   const database = require("./src/database")(conf, env);
   const models = require("./src/models")(database);
   const schemas = require("./src/schemas")();
-  const services = require("./src/services")(app, logger, schemas, models);
+  const services = require("./src/services")(logger, schemas, models);
 
   await database.sync({});
 
-  app.set("schemas", schemas);
-  app.set("models", models);
-  app.set("env", env);
-  app.set("logger", logger);
-  app.set("services", services);
-  app.set("conf", services);
+  server.app.services = services;
 
-  require("./src/routes")(app);
+  require("./src/routes")(server);
 
-  return app;
+  return server;
 };

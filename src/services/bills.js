@@ -1,17 +1,13 @@
-module.exports = app => {
-  async function list(req, res) {
-    const models = app.get("models");
-
+module.exports = (schemas, models) => {
+  async function list(request, h) {
     let billList = await models.Bill.findAll();
-    res.status(200).send(billList);
+    return h.response(billList).code(200);
   }
 
-  async function removeAll(req, res) {
-    const models = app.get("models");
-
+  async function removeAll(request, h) {
     const billList = await models.Bill.findAll();
     billList.forEach(bill => bill.destroy());
-    res.status(204).send();
+    return h.response().code(204);
   }
 
   return { list, removeAll };

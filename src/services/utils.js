@@ -3,7 +3,6 @@ const bodyParser = require("body-parser");
 
 module.exports = logger => {
   return {
-    parseJSON: bodyParser.json(),
     logRequests: (req, res, next) => {
       logger.debug({
         method: req.method,

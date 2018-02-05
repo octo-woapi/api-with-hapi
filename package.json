@@ -38,11 +38,10 @@
     "prettier": "^1.8.2"
   },
   "dependencies": {
-    "body-parser": "^1.18.2",
     "bunyan": "^1.8.12",
     "cors": "^2.8.4",
-    "express": "^4.16.2",
     "joi": "^13.0.2",
+    "hapi": "^17.2.0",
     "pg": "^6.4.2",
     "pg-hstore": "^2.3.2",
     "sequelize": "^4.22.11",

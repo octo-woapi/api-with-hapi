@@ -1,8 +1,8 @@
 const got = require("got");
 const faker = require("faker");
-const application = require("..");
+const api = require("..");
 
-const PORT = process.env.PORT || 1337;
+const PORT = process.env.PORT || 3000;
 
 async function queryApi(method, resource, options) {
   const customOptions = Object.assign({}, options, { json: true, method });
@@ -18,14 +18,13 @@ async function queryApi(method, resource, options) {
 function startApi() {
   let server;
 
-  before(done => {
-    application().then(app => {
-      server = app.listen(PORT, done);
-    });
+  before(async () => {
+    server = await api();
+    return await server.start();
   });
 
-  after(() => {
-    server.close();
+  after(async () => {
+    return await server.stop();
   });
 }
 

@@ -1,22 +1,59 @@
-module.exports = app => {
-  const services = app.get("services");
-
-  app.use(services.utils.parseJSON);
-  app.use(services.utils.logRequests);
-  app.use(services.utils.enableCors);
-  app.use(services.utils.returnApplicationJson);
-
-  app.post("/products", services.products.create);
-  app.get("/products", services.products.list);
-  app.get("/products/:id", services.products.find);
-  app.delete("/products", services.products.removeAll);
-
-  app.post("/orders", services.orders.create);
-  app.get("/orders", services.orders.list);
-  app.get("/orders/:id", services.orders.find);
-  app.delete("/orders", services.orders.removeAll);
-  app.put("/orders/:id/status", services.orders.updateStatus);
-
-  app.get("/bills", services.bills.list);
-  app.delete("/bills", services.bills.removeAll);
+module.exports = server => {
+  server.route([
+    {
+      method: "GET",
+      path: "/products",
+      handler: server.app.services.products.list
+    },
+    {
+      method: "DELETE",
+      path: "/products",
+      handler: server.app.services.products.removeAll
+    },
+    {
+      method: "POST",
+      path: "/products",
+      handler: server.app.services.products.create
+    },
+    {
+      method: "GET",
+      path: "/products/{id}",
+      handler: server.app.services.products.find
+    },
+    {
+      method: "GET",
+      path: "/bills",
+      handler: server.app.services.bills.list
+    },
+    {
+      method: "DELETE",
+      path: "/bills",
+      handler: server.app.services.bills.removeAll
+    },
+    {
+      method: "POST",
+      path: "/orders",
+      handler: server.app.services.orders.create
+    },
+    {
+      method: "GET",
+      path: "/orders",
+      handler: server.app.services.orders.list
+    },
+    {
+      method: "DELETE",
+      path: "/orders",
+      handler: server.app.services.orders.removeAll
+    },
+    {
+      method: "GET",
+      path: "/orders/{id}",
+      handler: server.app.services.orders.find
+    },
+    {
+      method: "PUT",
+      path: "/orders/{id}/status",
+      handler: server.app.services.orders.updateStatus
+    }
+  ]);
 };

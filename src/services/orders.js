@@ -2,12 +2,9 @@ const Joi = require("joi");
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;
 
-module.exports = app => {
-  async function create(req, res) {
-    const schemas = app.get("schemas");
-    const models = app.get("models");
-
-    const { error } = Joi.validate(req.body, schemas.Order, {
+module.exports = (schemas, models) => {
+  async function create(request, h) {
+    const { error } = Joi.validate(request.payload, schemas.Order, {
       abortEarly: false
     });
 
@@ -15,21 +12,23 @@ module.exports = app => {
       const errorMessage = error.details.map(({ message, context }) =>
         Object.assign({ message, context })
       );
-      return res.status(400).send({ data: errorMessage });
+      return h.response({ data: errorMessage }).code(400);
     }
 
     const productList = await models.Product.findAll({
       where: {
-        id: { [Op.in]: req.body.product_list.map(id => parseInt(id, 0)) }
+        id: { [Op.in]: request.payload.product_list.map(id => parseInt(id, 0)) }
       }
     });
 
     if (productList.length === 0) {
-      return res.status(400).send({
-        data: [
-          { message: "Unknown products", context: { key: "product_list" } }
-        ]
-      });
+      return h
+        .response({
+          data: [
+            { message: "Unknown products", context: { key: "product_list" } }
+          ]
+        })
+        .code(400);
     }
 
     const productListData = productList.map(product => product.toJSON());
@@ -61,54 +60,48 @@ module.exports = app => {
         shipment_amount: orderShipmentPrice,
         total_weight: orderTotalWeight
       },
-      { product_list: req.body.product_list }
+      { product_list: request.payload.product_list }
     );
 
     const order = await models.Order.create(orderData);
-    res.set("Location", `/orders/${order.id}`);
-    res.status(201).send();
+    return h
+      .response()
+      .header("Location", `/orders/${order.id}`)
+      .code(201);
   }
 
-  async function list(req, res) {
-    const models = app.get("models");
-
+  async function list(request, h) {
     let orderList = await models.Order.findAll();
-    const { sort } = req.query;
+    const { sort } = request.query;
     orderList = orderList.sort((a, b) => {
       if (a[sort] < b[sort]) return -1;
       if (a[sort] > b[sort]) return 1;
       return 0;
     });
-    res.status(200).send(orderList);
+    return h.response(orderList).code(200);
   }
 
-  async function find(req, res) {
-    const models = app.get("models");
-
-    const { id } = req.params;
+  async function find(request, h) {
+    const { id } = request.params;
     const order = await models.Order.findById(id);
-    if (!order) return res.status(404).send();
-    return res.status(200).send(order.toJSON());
+    if (!order) return h.response().code(404);
+    return h.response(order.toJSON()).code(200);
   }
 
-  async function removeAll(req, res) {
-    const models = app.get("models");
-
+  async function removeAll(request, h) {
     const orderList = await models.Order.findAll();
     orderList.forEach(order => order.destroy());
-    res.status(204).send();
+    return h.response().code(204);
   }
 
-  async function updateStatus(req, res) {
-    const models = app.get("models");
-
-    const { id } = req.params;
+  async function updateStatus(request, h) {
+    const { id } = request.params;
     const order = await models.Order.findById(id);
-    if (!order) return res.status(404).send();
+    if (!order) return h.response().code(404);
 
-    const { status } = req.body;
+    const { status } = request.payload;
     if (!["pending", "paid", "cancelled"].includes(status)) {
-      return res.status(400).send();
+      return h.response().code(400);
     }
 
     if (status === "paid") {
@@ -117,7 +110,7 @@ module.exports = app => {
 
     await order.update({ status });
 
-    return res.status(200).send();
+    return h.response().code(200);
   }
 
   return { create, find, list, removeAll, updateStatus };
