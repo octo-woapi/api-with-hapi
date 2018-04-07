@@ -1,8 +1,14 @@
 const Joi = require("joi");
 
-module.exports = (schemas, models) => {
-  async function create(request, h) {
-    const { error } = Joi.validate(request.payload, schemas.Product, {
+module.exports = (
+  schemas,
+  models,
+  { MissingResourceError, ValidationError }
+) => {
+  return { find, list, create, removeAll };
+
+  async function create(data) {
+    const { error } = Joi.validate(data, schemas.Product, {
       abortEarly: false
     });
 
@@ -11,39 +17,37 @@ module.exports = (schemas, models) => {
         Object.assign({ message, context })
       );
 
-      return h.response({ data: errorMessage }).code(400);
+      throw new ValidationError(errorMessage);
     }
 
-    const product = await models.Product.create(request.payload);
-    return h
-      .response()
-      .code(201)
-      .header("Location", `/products/${product.id}`);
+    const { id } = await models.Product.create(data);
+
+    return id;
   }
 
-  async function list(request, h) {
+  async function list(sort) {
     let productList = await models.Product.findAll();
-    const { sort } = request.query;
+
     productList = productList.sort((a, b) => {
       if (a[sort] < b[sort]) return -1;
       if (a[sort] > b[sort]) return 1;
       return 0;
     });
-    return h.response(productList).code(200);
+
+    return productList;
   }
 
-  async function find(request, h) {
-    const { id } = request.params;
+  async function find(id) {
     const product = await models.Product.findById(id);
-    if (!product) return h.response().code(404);
-    return h.response(product.toJSON()).code(200);
+    if (!product) {
+      throw new MissingResourceError();
+    }
+
+    return product.toJSON();
   }
 
-  async function removeAll(request, h) {
+  async function removeAll() {
     const productList = await models.Product.findAll();
     productList.forEach(product => product.destroy());
-    return h.response().code(204);
   }
-
-  return { find, list, create, removeAll };
 };

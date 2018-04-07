@@ -1,7 +1,7 @@
-module.exports = (logger, schemas, models) => {
+module.exports = (schemas, models, exceptions) => {
   return {
-    bills: require("./bills")(schemas, models),
-    products: require("./products")(schemas, models),
-    orders: require("./orders")(schemas, models)
+    bills: require("./bills")(models),
+    products: require("./products")(schemas, models, exceptions),
+    orders: require("./orders")(schemas, models, exceptions)
   };
 };

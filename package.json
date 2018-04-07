@@ -1,7 +1,7 @@
 {
-  "name": "api-with-nodejs",
+  "name": "api-with-hapi",
   "version": "1.0.0",
-  "description": "An API with Express",
+  "description": "An API with Hapi",
   "main": "index.js",
   "scripts": {
     "start": "node ./bin/start",
@@ -40,8 +40,8 @@
   "dependencies": {
     "bunyan": "^1.8.12",
     "cors": "^2.8.4",
-    "joi": "^13.0.2",
     "hapi": "^17.2.0",
+    "joi": "^13.0.2",
     "pg": "^6.4.2",
     "pg-hstore": "^2.3.2",
     "sequelize": "^4.22.11",
